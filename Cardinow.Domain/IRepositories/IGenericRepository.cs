@@ -1,12 +1,19 @@
-﻿namespace Cardinow.Domain.IRepositories;
+﻿using Cardinow.Domain.Entities;
 
-public interface IGenericRepository <TEntity, TDbEntity> 
-    where TEntity : class 
-    where TDbEntity : class
+namespace Cardinow.Domain.IRepositories;
+
+public interface IGenericRepository<T>
+    where T : BaseEntity
 {
-    Task <IEnumerable<TEntity>> GetAllAsync();
-    Task AddAsync(TEntity entity);
-    Task UpdateAsync(TEntity entity);
-    Task DeleteAsync(Guid id);
-    Task<TEntity> GetByIdAsync(Guid id);
+    Task<T?> GetByIdAsync(Guid id);
+
+    Task<IReadOnlyList<T>> GetAllAsync();
+
+    Task AddAsync(T entity);
+
+    void Update(T entity);
+
+    void Delete(T entity); // Soft delete
+
+    IQueryable<T> Query(); 
 }

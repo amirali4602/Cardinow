@@ -1,0 +1,6 @@
+﻿namespace Cardinow.Domain.Enums;
+public enum TransactionType
+{
+    Credit,
+    Debit
+}

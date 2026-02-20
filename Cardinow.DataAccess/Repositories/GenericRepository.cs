@@ -1,54 +1,37 @@
-﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
-using Cardinow.DataAccess.Persistence;
+﻿using Microsoft.EntityFrameworkCore;
 using Cardinow.Domain.IRepositories;
+using Cardinow.Domain.Entities;
 
-namespace Cardinow.DataAccess.Repositories;
-
-public class GenericRepository<TEntity,TDbEntity>(
-    AppDbContext context,
-    IMapper mapper) : IGenericRepository<TEntity,TDbEntity> 
-    where TEntity : class 
-    where TDbEntity : class
+public class GenericRepository<T>
+    : IGenericRepository<T>
+    where T : BaseEntity
 {
-    private readonly DbSet<TDbEntity> dbSet = context.Set<TDbEntity>();
+    private readonly DbSet<T> _dbSet;
 
-    public async Task<IEnumerable<TEntity>> GetAllAsync()
+    public GenericRepository(AppDbContext context)
     {
-        var dbEntities = await dbSet.ToListAsync();
-        return mapper.Map<IEnumerable<TEntity>>(dbEntities);
+        _dbSet = context.Set<T>();
     }
 
-    public async Task<TEntity> GetByIdAsync(Guid id)
-    {
-        var dbEntity= await dbSet.FindAsync(id);
-        return mapper.Map<TEntity>(dbEntity);
+    public async Task<T?> GetByIdAsync(Guid id)
+        => await _dbSet.FirstOrDefaultAsync(x => x.Id == id);
 
+    public async Task<IReadOnlyList<T>> GetAllAsync()
+        => await _dbSet.ToListAsync();
+
+    public async Task AddAsync(T entity)
+        => await _dbSet.AddAsync(entity);
+
+    public void Update(T entity)
+        => _dbSet.Update(entity);
+
+    public void Delete(T entity)
+    {
+        entity.IsDeleted = true;
+        entity.DeletedAt = DateTime.UtcNow;
+        _dbSet.Update(entity);
     }
 
-    public async Task AddAsync(TEntity entity)
-    {
-        var dbEntity = mapper.Map<TDbEntity>(entity);
-        await dbSet.AddAsync(dbEntity);
-        await context.SaveChangesAsync();
-    }
-
-    public async Task UpdateAsync(TEntity entity)
-    {
-        var dbEntity = mapper.Map<TDbEntity>(entity);
-        dbSet.Update(dbEntity);
-        await context.SaveChangesAsync();
-    }
-
-    public async Task DeleteAsync(Guid id)
-    {
-        var entity = await dbSet.FindAsync(id);
-        if (entity != null)
-        {
-            dbSet.Remove(entity);
-            await context.SaveChangesAsync();
-        }
-    }
-
-    
+    public IQueryable<T> Query()
+        => _dbSet.AsQueryable();
 }
