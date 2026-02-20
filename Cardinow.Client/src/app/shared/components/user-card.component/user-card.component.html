@@ -1,0 +1,18 @@
+<div class="user-card"
+     appHighlightActiveDirective
+     [isActive]="user.isActive">
+
+  <div class="user-header">
+    <h3>{{ user.name }}</h3>
+    <span class="status"
+          [class.active]="user.isActive"
+          [class.inactive]="!user.isActive">
+      {{ user.isActive ? 'Active' : 'Inactive' }}
+    </span>
+  </div>
+
+  <div class="user-info">
+    <p><strong>Last Login:</strong> {{ user.lastLogin | relativeTime }}</p>
+  </div>
+
+</div>
