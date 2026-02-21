@@ -1,9 +1,14 @@
 using Cardinow.Application.IServices;
 using Cardinow.Application.Services;
 using Cardinow.DataAccess.Repositories;
+using Cardinow.Domain.Entities;
 using Cardinow.Domain.IRepositories;
 using FluentValidation;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -43,8 +48,34 @@ builder.Services.AddScoped<IWalletService, WalletService>();
 builder.Services.AddScoped<IWalletTransactionService, WalletTransactionService>();
 builder.Services.AddScoped<ILogService, LogService>();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = "Cardinow",
+            ValidAudience = "CardinowUsers",
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes("SUPER_SECRET_KEY_12345"))
+        };
+    });
+
+builder.Services.AddAuthorization();
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowClient",
@@ -64,7 +95,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseAuthorization();
+app.UseAuthentication();  
+app.UseAuthorization();    
 
 app.MapControllers();
 

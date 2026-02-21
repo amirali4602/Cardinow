@@ -5,6 +5,7 @@ public class User : BaseEntity
 {
     public string? PhoneNumber { get; set; }
     public string? Email { get; set; }
+    public string? PasswordHash { get; set; }
     public UserRole Role { get; set; }
     public bool IsBlocked { get; set; } = false;
     // Relations

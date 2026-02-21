@@ -36,7 +36,12 @@ public class UsersController : ControllerBase
         var createdUser = await _userService.CreateAsync(dto);
         return CreatedAtAction(nameof(GetById), new { id = createdUser.Id }, createdUser);
     }
-
+    [HttpPost("login")]
+    public async Task<IActionResult> Login(LoginDto dto)
+    {
+        var token = await _userService.LoginAsync(dto);
+        return Ok(new { token });
+    }
     [HttpPut("{id}/role")]
     public async Task<IActionResult> UpdateRole(Guid id, UpdateUserRoleDto dto)
     {

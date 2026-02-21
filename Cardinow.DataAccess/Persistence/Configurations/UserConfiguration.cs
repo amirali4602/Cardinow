@@ -16,6 +16,9 @@ public class UserConfiguration
         entity.Property(x => x.Email)
                 .HasMaxLength(150);
 
+        entity.Property(x => x.PasswordHash)
+                .HasMaxLength(20);
+        
         entity.Property(x => x.Role)
                 .HasConversion<string>();
 
