@@ -10,4 +10,5 @@ public interface IUserService
     Task VerifyCodeAsync(VerifyCodeDto dto);
     Task UpdateRoleAsync(UpdateUserRoleDto dto);
     Task BlockUserAsync(BlockUserDto dto);
+    Task<string> LoginAsync(LoginDto dto);
 }
