@@ -24,9 +24,10 @@ public class WalletTransactionConfiguration
         entity.Property(x => x.Reason)
                 .HasMaxLength(300);
 
-        entity.HasOne(x => x.Wallet)
-                .WithMany(x => x.Transactions)
-                .HasForeignKey(x => x.WalletId);
+        entity.HasOne(t => t.Wallet)
+                .WithMany(w => w.Transactions)
+                .HasForeignKey(t => t.WalletId)
+                .OnDelete(DeleteBehavior.Cascade);
 
         entity.HasQueryFilter(x => !x.IsDeleted);
     }

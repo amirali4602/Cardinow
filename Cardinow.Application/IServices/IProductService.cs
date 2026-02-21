@@ -5,9 +5,9 @@ namespace Cardinow.Application.IServices;
 
 public interface IProductService
 {
-    Task<IReadOnlyList<ProductReadDto>> GetAllAsync();
     Task<ProductReadDto?> GetByIdAsync(Guid id);
+    Task<IEnumerable<ProductReadDto>> GetAllAsync();
     Task CreateAsync(CreateProductDto dto);
     Task UpdateAsync(Guid id, UpdateProductDto dto);
-    Task DeleteAsync(Guid id);
+    Task SoftDeleteAsync(Guid id);
 }

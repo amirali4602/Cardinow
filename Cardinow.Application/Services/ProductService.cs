@@ -6,24 +6,21 @@ using Cardinow.Domain.IRepositories;
 
 public class ProductService : IProductService
 {
-    private readonly IProductRepository _repository;
+    private readonly IGenericRepository<Product> _repository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
-    public ProductService(
-        IProductRepository repository,
-        IUnitOfWork unitOfWork,
-        IMapper mapper)
+    public ProductService(IGenericRepository<Product> repository, IUnitOfWork unitOfWork, IMapper mapper)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
         _mapper = mapper;
     }
 
-    public async Task<IReadOnlyList<ProductReadDto>> GetAllAsync()
+    public async Task<IEnumerable<ProductReadDto>> GetAllAsync()
     {
         var products = await _repository.GetAllAsync();
-        return _mapper.Map<IReadOnlyList<ProductReadDto>>(products);
+        return _mapper.Map<IEnumerable<ProductReadDto>>(products);
     }
 
     public async Task<ProductReadDto?> GetByIdAsync(Guid id)
@@ -34,31 +31,34 @@ public class ProductService : IProductService
 
     public async Task CreateAsync(CreateProductDto dto)
     {
-        var entity = _mapper.Map<Product>(dto);
+        var product = _mapper.Map<Product>(dto);
+        product.CreatedAt = DateTime.UtcNow;
 
-        await _repository.AddAsync(entity);
+        await _repository.AddAsync(product);
         await _unitOfWork.SaveChangesAsync();
     }
 
     public async Task UpdateAsync(Guid id, UpdateProductDto dto)
     {
-        var entity = await _repository.GetByIdAsync(id);
-        if (entity == null) return;
+        var product = await _repository.GetByIdAsync(id);
+        if (product == null) throw new Exception("Product not found");
 
-        _mapper.Map(dto, entity);
+        _mapper.Map(dto, product);
+        product.UpdatedAt = DateTime.UtcNow;
 
-        _repository.Update(entity);
+        _repository.Update(product);
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task SoftDeleteAsync(Guid id)
     {
-        var entity = await _repository.GetByIdAsync(id);
-        if (entity == null) return;
+        var product = await _repository.GetByIdAsync(id);
+        if (product == null) throw new Exception("Product not found");
 
-        entity.IsDeleted = true; // SoftDelete
-        _repository.Update(entity);
+        product.IsDeleted = true;
+        product.DeletedAt = DateTime.UtcNow;
 
+        _repository.Update(product);
         await _unitOfWork.SaveChangesAsync();
     }
 }

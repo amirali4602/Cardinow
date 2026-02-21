@@ -72,14 +72,14 @@ public class DtoMapper : AutoMapper.Profile
         #region User
 
         CreateMap<User, UserAdminReadDto>();
-
-        CreateMap<UpdateUserRoleDto, User>();
+        CreateMap<UpdateUserRoleDto, User>(); 
+        CreateMap<RegisterUserDto, User>(); 
 
         #endregion
 
         #region Log
 
-        CreateMap<Log, LogReadDto>();
+        CreateMap<Log, LogReadDto>().ReverseMap();
 
         #endregion
 

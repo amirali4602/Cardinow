@@ -24,12 +24,13 @@ public class ProfileConfiguration
         entity.Property(x => x.VcfLink)
                 .HasMaxLength(500);
 
-        entity.Property(x => x.LinksJson)
-                .HasColumnType("jsonb");
+        entity.Property(p => p.LinksJson)
+                .HasColumnType("nvarchar(max)");
 
-        entity.HasOne(x => x.User)
-                .WithOne()
-                .HasForeignKey<Profile>(x => x.UserId);
+        entity.HasOne(p => p.User)
+                .WithOne(u => u.Profile)
+                .HasForeignKey<Profile>(p => p.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
         entity.HasQueryFilter(x => !x.IsDeleted);
     }

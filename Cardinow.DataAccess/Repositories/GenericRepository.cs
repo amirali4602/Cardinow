@@ -14,11 +14,12 @@ public class GenericRepository<T>
     }
 
     public async Task<T?> GetByIdAsync(Guid id)
-        => await _dbSet.FirstOrDefaultAsync(x => x.Id == id);
-
+    => await _dbSet
+        .FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
     public async Task<IReadOnlyList<T>> GetAllAsync()
-        => await _dbSet.ToListAsync();
-
+    => await _dbSet
+        .Where(x => !x.IsDeleted)
+        .ToListAsync();
     public async Task AddAsync(T entity)
         => await _dbSet.AddAsync(entity);
 

@@ -14,14 +14,15 @@ public class ResellerConfiguration
                 .HasMaxLength(200);
 
         entity.Property(x => x.RenewalPlansJson)
-                .HasColumnType("jsonb");
+                .HasColumnType("nvarchar(max)");
 
         entity.HasIndex(x => x.Domain)
                 .IsUnique();
 
-        entity.HasOne(x => x.User)
-                .WithMany()
-                .HasForeignKey(x => x.UserId);
+        entity.HasOne(r => r.User)
+                .WithOne(u => u.Reseller)
+                .HasForeignKey<Reseller>(r => r.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
         entity.HasQueryFilter(x => !x.IsDeleted);
      

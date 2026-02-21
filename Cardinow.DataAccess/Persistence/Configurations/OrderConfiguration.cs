@@ -1,6 +1,7 @@
 ﻿using Cardinow.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System.Reflection.Emit;
 
 namespace Cardinow.DataAccess.Persistence.Configurations;
 public class OrderConfiguration
@@ -8,6 +9,8 @@ public class OrderConfiguration
 {
     public void Configure(EntityTypeBuilder<Order> entity)
     {
+        
+
         entity.Property(x => x.ShippingCost)
               .HasPrecision(18, 2);
 
@@ -17,15 +20,15 @@ public class OrderConfiguration
         entity.Property(x => x.PackageType)
               .HasConversion<string>();
 
-        entity.HasOne(x => x.User)
-              .WithMany()
-              .HasForeignKey(x => x.UserId)
-              .OnDelete(DeleteBehavior.Restrict);
+        entity.HasOne(o => o.User)
+            .WithMany(u => u.Orders)
+            .HasForeignKey(o => o.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
 
-        entity.HasOne(x => x.Product)
-              .WithMany()
-              .HasForeignKey(x => x.ProductId)
-              .OnDelete(DeleteBehavior.Restrict);
+        entity.HasOne(o => o.Product)
+            .WithMany(p => p.Orders)
+            .HasForeignKey(o => o.ProductId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         entity.HasQueryFilter(x => !x.IsDeleted);
     }

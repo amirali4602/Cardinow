@@ -22,5 +22,10 @@ internal class LogConfiguration
 
             entity.HasIndex(x => x.Timestamp);
 
+            entity.HasOne(l => l.User)
+                    .WithMany(u => u.Logs)
+                    .HasForeignKey(l => l.UserId)
+                    .OnDelete(DeleteBehavior.SetNull);
+
     }
 }

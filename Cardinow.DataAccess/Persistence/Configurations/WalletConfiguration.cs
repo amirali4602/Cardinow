@@ -16,9 +16,13 @@ public class WalletConfiguration
         entity.Property(x => x.TotalSales)
                 .HasPrecision(18, 2);
 
-        entity.HasOne(x => x.User)
-                .WithOne()
-                .HasForeignKey<Wallet>(x => x.UserId);
+        entity.Property(x => x.CashedOut)
+                .HasPrecision(18, 2);
+
+        entity.HasOne(w => w.User)
+                .WithOne(u => u.Wallet)
+                .HasForeignKey<Wallet>(w => w.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
         entity.HasQueryFilter(x => !x.IsDeleted);
     }

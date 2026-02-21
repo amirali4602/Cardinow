@@ -8,6 +8,6 @@ public class Profile : BaseEntity
     public string? LogoUrl { get; set; }
     public string? VcfLink { get; set; }
 
-    // JSON (PostgreSQL jsonb)
+    // JSON stored as string for SQL Server
     public string LinksJson { get; set; }
 }
