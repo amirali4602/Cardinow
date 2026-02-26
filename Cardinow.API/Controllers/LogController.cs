@@ -1,5 +1,6 @@
 ﻿using Cardinow.Application.Dtos.Logs;
 using Cardinow.Application.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Cardinow.API.Controllers
@@ -16,6 +17,7 @@ namespace Cardinow.API.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin,RestrictedAdmin")]
         public async Task<IActionResult> GetAll()
         {
             var logs = await _service.GetAllAsync();

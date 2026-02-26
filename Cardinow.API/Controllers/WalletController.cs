@@ -1,10 +1,14 @@
 ﻿using Cardinow.Application.Dtos.Wallets;
 using Cardinow.Application.IServices;
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using System.Security.Claims;
 
 namespace Cardinow.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class WalletController : ControllerBase
@@ -21,18 +25,37 @@ public class WalletController : ControllerBase
     [HttpGet("{userId}")]
     public async Task<IActionResult> GetByUserId(Guid userId)
     {
+        var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var role = User.FindFirst(ClaimTypes.Role)?.Value;
+
+        if (currentUserId == null)
+            return Unauthorized();
+
+        if (role != "Admin" && currentUserId != userId.ToString())
+            return Forbid();
+
         var wallet = await _walletService.GetByUserIdAsync(userId);
         if (wallet == null) return NotFound();
+
         return Ok(wallet);
     }
 
-    [HttpPost("{userId}/cashout")]
-    public async Task<IActionResult> Cashout(Guid userId, [FromBody] CashoutRequestDto dto)
+    [HttpPost("cashout")]
+    public async Task<IActionResult> Cashout([FromBody] CashoutRequestDto dto)
     {
-        var validation = await _validator.ValidateAsync(dto);
-        if (!validation.IsValid) return BadRequest(validation.Errors);
+        var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-        var result = await _walletService.RequestCashoutAsync(userId, dto.Amount, dto.BankInfo);
+        if (currentUserId == null)
+            return Unauthorized();
+
+        var validation = await _validator.ValidateAsync(dto);
+        if (!validation.IsValid)
+            return BadRequest(validation.Errors);
+        var result = await _walletService.RequestCashoutAsync(
+            Guid.Parse(currentUserId),
+            dto
+        );
+
         return Ok(result);
     }
 }

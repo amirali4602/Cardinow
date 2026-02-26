@@ -25,19 +25,19 @@ public class WalletService : IWalletService
         return wallet == null ? null : _mapper.Map<WalletReadDto>(wallet);
     }
 
-    public async Task<CashoutRequestDto> RequestCashoutAsync(Guid userId, decimal amount, string bankInfo)
+    public async Task<CashoutRequestDto> RequestCashoutAsync(Guid userId, CashoutRequestDto dto)
     {
         var wallet = (await _repository.GetAllAsync()).FirstOrDefault(w => w.UserId == userId && !w.IsDeleted);
         if (wallet == null) throw new Exception("Wallet not found");
-        if (amount <= 0 || amount > wallet.Balance) throw new Exception("Invalid amount");
+        if (dto.Amount <= 0 || dto.Amount > wallet.Balance) throw new Exception("Invalid amount");
 
-        wallet.Balance -= amount;
-        wallet.CashedOut += amount;
+        wallet.Balance -= dto.Amount;
+        wallet.CashedOut += dto.Amount;
         wallet.UpdatedAt = DateTime.UtcNow;
 
         _repository.Update(wallet);
         await _unitOfWork.SaveChangesAsync();
 
-        return new CashoutRequestDto { Amount = amount, BankInfo = bankInfo };
+        return new CashoutRequestDto { Amount = dto.Amount, BankInfo = dto.BankInfo };
     }
 }

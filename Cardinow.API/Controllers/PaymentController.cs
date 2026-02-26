@@ -1,10 +1,12 @@
 ﻿using Cardinow.Application.Dtos.Payment;
 using Cardinow.Application.IServices;
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Cardinow.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class PaymentController : ControllerBase
@@ -19,6 +21,7 @@ public class PaymentController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Customer, Resellers")]
     public async Task<IActionResult> Create([FromBody] CreatePaymentDto dto)
     {
         var validation = await _validator.ValidateAsync(dto);
@@ -30,6 +33,7 @@ public class PaymentController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [Authorize(Roles = "Admin,Customer")]
     public async Task<IActionResult> Get(Guid id)
     {
         var payment = await _service.GetByIdAsync(id);
@@ -38,6 +42,7 @@ public class PaymentController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> GetAll()
     {
         var payments = await _service.GetAllAsync();

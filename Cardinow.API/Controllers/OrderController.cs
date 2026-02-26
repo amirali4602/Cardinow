@@ -1,10 +1,13 @@
 ﻿using Cardinow.Application.Dtos.Orders;
 using Cardinow.Application.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Cardinow.API.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public class OrdersController : ControllerBase
 {
@@ -16,6 +19,7 @@ public class OrdersController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Roles = "Admin,RestrictedAdmin")]
     public async Task<IActionResult> GetAll()
     {
         var orders = await _orderService.GetAllAsync();
@@ -23,14 +27,28 @@ public class OrdersController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [Authorize]
     public async Task<IActionResult> GetById(Guid id)
     {
         var order = await _orderService.GetByIdAsync(id);
-        if (order == null) return NotFound();
+        if (order == null)
+            return NotFound();
+
+        var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var role = User.FindFirst(ClaimTypes.Role)?.Value;
+
+        if (currentUserId == null)
+            return Unauthorized();
+
+        if (role != "Admin" && order.UserId.ToString() != currentUserId)
+            return Forbid();
+
         return Ok(order);
     }
 
     [HttpPost]
+    [Authorize(Roles = "Customer, DedicatedReseller, AffiliateReseller")]
+
     public async Task<IActionResult> Create(CreateOrderDto dto)
     {
         var created = _orderService.CreateAsync(dto);
@@ -38,6 +56,7 @@ public class OrdersController : ControllerBase
     }
 
     [HttpPut("{id}/status")]
+    [Authorize(Roles = "Admin, RestrictedAdmin")]
     public async Task<IActionResult> UpdateStatus(Guid id, UpdateOrderStatusDto dto)
     {
         await _orderService.UpdateStatusAsync(id, dto.Status);
@@ -45,6 +64,7 @@ public class OrdersController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(Guid id)
     {
         await _orderService.SoftDeleteAsync(id);
